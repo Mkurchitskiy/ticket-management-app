@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -145,6 +146,29 @@ public class Dao {
 		return results;
 	}
 	// continue coding for updateRecords implementation
+	public int updateRecords(int ticketID, String ticketDescription) {
+		try {
+			String sql = "UPDATE mkurc_tickets SET ticket_description = ? WHERE ticket_id = ?;";
+			PreparedStatement ps = getConnection().prepareStatement(sql);
+			ps.setString(1, ticketDescription);
+			ps.setInt(2, ticketID);
+			return ps.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return 0;
+		}
+	}
 
 	// continue coding for deleteRecords implementation
+	public int deleteRecords(int ticketID) {
+		try {
+			String sql = "DELETE FROM mkurc_tickets WHERE ticket_id = ?;";
+			PreparedStatement ps = getConnection().prepareStatement(sql);
+			ps.setInt(1, ticketID);
+			return ps.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return 0;
+		}
+	}
 }
