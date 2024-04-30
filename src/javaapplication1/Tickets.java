@@ -55,11 +55,13 @@ public class Tickets extends JFrame implements ActionListener {
 		mnuItemUpdate = new JMenuItem("Update Ticket");
 		// add to Admin main menu item
 		mnuAdmin.add(mnuItemUpdate);
+		mnuItemUpdate.setVisible(chkIfAdmin);
 
 		// initialize second sub menu items for Admin main menu
 		mnuItemDelete = new JMenuItem("Delete Ticket");
 		// add to Admin main menu item
 		mnuAdmin.add(mnuItemDelete);
+		mnuItemDelete.setVisible(chkIfAdmin);
 
 		// initialize first sub menu item for Tickets main menu
 		mnuItemOpenTicket = new JMenuItem("Open Ticket");
@@ -94,7 +96,9 @@ public class Tickets extends JFrame implements ActionListener {
 		// create JMenu bar
 		JMenuBar bar = new JMenuBar();
 		bar.add(mnuFile); // add main menu items in order, to JMenuBar
-		bar.add(mnuAdmin);
+		if (chkIfAdmin) {
+			bar.add(mnuAdmin); // Only add Admin menu to admin user menu
+		}
 		bar.add(mnuTickets);
 		// add menu bar components to frame
 		setJMenuBar(bar);
