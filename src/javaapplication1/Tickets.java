@@ -161,6 +161,44 @@ public class Tickets extends JFrame implements ActionListener {
 		 * delete sub menus for example) with similar syntax & logic as shown above
 		 */
 
+		else if (e.getSource() == mnuItemUpdate) { 
+			// Get ticket ID from user
+			String ticketIdString = JOptionPane.showInputDialog(null, "Enter the ID of the ticket to update:");
+			if (ticketIdString != null && !ticketIdString.isEmpty() ) {
+				int ticketId = Integer.parseInt(ticketIdString);
+				// Get the new descriptionate for the ticket
+				String newDescription = JOptionPane.showInputDialog(null, "Enter the new description for the ticket: ");
+				if (newDescription != null && !newDescription.isEmpty()) {
+					// Call update method
+					int result = dao.updateRecords(ticketId, newDescription);
+					if (result > 0) {
+						JOptionPane.showMessageDialog(null, "Tickets updated successfully!");
+					} else {
+						JOptionPane.showMessageDialog(null, "Failed to update tickets. Please try again.");
+					}
+				}
+			}
+		}
+
+		else if (e.getSource() == mnuItemDelete) {
+			// Get the ticket Id from user
+			String ticketIdString = JOptionPane.showInputDialog(null, "Enter the ID of the ticket to delete:");
+			if (ticketIdString != null && !ticketIdString.isEmpty()) {
+				int ticketId = Integer.parseInt(ticketIdString);
+				// Ask user for conformation
+				int confirm = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete this ticket?", "Confirm Deletion", JOptionPane.YES_NO_CANCEL_OPTION);
+				if (confirm == JOptionPane.YES_OPTION) {
+					// Call delete method
+					int result = dao.deleteRecords(ticketId);
+					if (result > 0) {
+						JOptionPane.showMessageDialog(null, "Ticket deleted successfully!");
+					} else {
+						JOptionPane.showMessageDialog(null, "Failed to delete ticket. Please check the ticket ID.");
+					}
+				}
+			}
+		}
+
 	}
 
 }
