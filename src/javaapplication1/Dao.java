@@ -133,19 +133,26 @@ public class Dao {
 
 	}
 
-	public ResultSet readRecords() {
-
+	public ResultSet readRecords(String username, boolean isAdmin) {
 		ResultSet results = null;
 		try {
-			statement = connect.createStatement();
-			results = statement.executeQuery("SELECT * FROM mkurc_tickets");
-			//connect.close();
-		} catch (SQLException e1) {
-			e1.printStackTrace();
+			String query;
+			if (isAdmin) {
+				query = "SELECT * FROM mkurc_tickets";
+			} else {
+				query = "SELECT * FROM mkurc_tickets WHERE ticket_issuer = ?";
+			}
+			PreparedStatement ps = connect.prepareStatement(query);
+			if (!isAdmin) {
+				ps.setString(1, username);
+			}
+			results = ps.executeQuery();
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
 		return results;
 	}
-	
+
 	// continue coding for updateRecords implementation
 	public int updateRecords(int ticketID, String ticketDescription) {
 		try {

@@ -21,6 +21,7 @@ public class Tickets extends JFrame implements ActionListener {
 	// class level member objects
 	Dao dao = new Dao(); // for CRUD operations
 	Boolean chkIfAdmin = null;
+	String currentUser;
 
 	// Main menu object items
 	private JMenu mnuFile = new JMenu("File");
@@ -34,12 +35,11 @@ public class Tickets extends JFrame implements ActionListener {
 	JMenuItem mnuItemOpenTicket;
 	JMenuItem mnuItemViewTicket;
 
-	public Tickets(Boolean isAdmin) {
-
+	public Tickets(Boolean isAdmin, String username) {
 		chkIfAdmin = isAdmin;
+		currentUser = username;
 		createMenu();
 		prepareGUI();
-
 	}
 
 	private void createMenu() {
@@ -146,7 +146,7 @@ public class Tickets extends JFrame implements ActionListener {
 
 				// Use JTable built in functionality to build a table model and
 				// display the table model off your result set!!!
-				JTable jt = new JTable(ticketsJTable.buildTableModel(dao.readRecords()));
+				JTable jt = new JTable(ticketsJTable.buildTableModel(dao.readRecords(currentUser, chkIfAdmin)));
 				jt.setBounds(30, 40, 200, 400);
 				JScrollPane sp = new JScrollPane(jt);
 				add(sp);
@@ -156,6 +156,7 @@ public class Tickets extends JFrame implements ActionListener {
 				e1.printStackTrace();
 			}
 		}
+
 		/*
 		 * continue implementing any other desired sub menu items (like for update and
 		 * delete sub menus for example) with similar syntax & logic as shown above
@@ -198,7 +199,5 @@ public class Tickets extends JFrame implements ActionListener {
 				}
 			}
 		}
-
 	}
-
 }
