@@ -95,11 +95,12 @@ public class Tickets extends JFrame implements ActionListener {
 
 		// create JMenu bar
 		JMenuBar bar = new JMenuBar();
-		bar.add(mnuFile); // add main menu items in order, to JMenuBar
+		bar.add(mnuFile); // Add File menu to JMenuBar
 		if (chkIfAdmin) {
 			bar.add(mnuAdmin); // Only add Admin menu to admin user menu
 		}
-		bar.add(mnuTickets);
+		bar.add(mnuTickets); // Add Tickets menu to JMenuBar
+
 		// add menu bar components to frame
 		setJMenuBar(bar);
 
@@ -140,23 +141,19 @@ public class Tickets extends JFrame implements ActionListener {
 		}
 
 		else if (e.getSource() == mnuItemViewTicket) {
-
-			// retrieve all tickets details for viewing in JTable
+			// Assume 'currentUser' holds the username of the logged-in user.
+			// This variable should be set during login.
 			try {
-
-				// Use JTable built in functionality to build a table model and
-				// display the table model off your result set!!!
 				JTable jt = new JTable(ticketsJTable.buildTableModel(dao.readRecords(currentUser, chkIfAdmin)));
 				jt.setBounds(30, 40, 200, 400);
 				JScrollPane sp = new JScrollPane(jt);
 				add(sp);
-				setVisible(true); // refreshes or repaints frame on screen
-
+				setVisible(true); // Refreshes or repaints frame on screen
 			} catch (SQLException e1) {
 				e1.printStackTrace();
 			}
 		}
-
+		
 		/*
 		 * continue implementing any other desired sub menu items (like for update and
 		 * delete sub menus for example) with similar syntax & logic as shown above
