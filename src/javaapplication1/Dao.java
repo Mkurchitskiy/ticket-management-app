@@ -145,6 +145,7 @@ public class Dao {
 		}
 		return results;
 	}
+	
 	// continue coding for updateRecords implementation
 	public int updateRecords(int ticketID, String ticketDescription) {
 		try {
