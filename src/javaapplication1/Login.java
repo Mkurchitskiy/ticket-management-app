@@ -35,13 +35,11 @@ public class Login extends JFrame {
 		// JLabel lblSpacer = new JLabel(" ", JLabel.CENTER);
 
 		JTextField txtUname = new JTextField(10);
-
 		JPasswordField txtPassword = new JPasswordField();
 		JButton btn = new JButton("Submit");
 		JButton btnExit = new JButton("Exit");
 
 		// constraints
-
 		lblStatus.setToolTipText("Contact help desk to unlock password");
 		lblUsername.setHorizontalAlignment(JLabel.CENTER);
 		lblPassword.setHorizontalAlignment(JLabel.CENTER);
@@ -67,15 +65,22 @@ public class Login extends JFrame {
 				String query = "SELECT * FROM mkurc_users WHERE uname = ? and upass = ?;";
 				try (PreparedStatement stmt = conn.getConnection().prepareStatement(query)) {
 					stmt.setString(1, txtUname.getText());
-					stmt.setString(2, txtPassword.getText());
-					ResultSet rs = stmt.executeQuery();
+                    // Use getPassword(), which is more secure than getText()
+                    char[] passwordChars = txtPassword.getPassword();
+                    String passwordString = new String(passwordChars); // Convert char array to String
+
+                    stmt.setString(2, passwordString);
+                    ResultSet rs = stmt.executeQuery();
 					if (rs.next()) {
 						admin = rs.getBoolean("admin"); // get table column value
 						new Tickets(admin, txtUname.getText()); //open Tickets file / GUI interface
 						setVisible(false); // HIDE THE FRAME
 						dispose(); // CLOSE OUT THE WINDOW
-					} else
-						lblStatus.setText("Try again! " + (3 - count) + " / 3 attempt(s) left");
+					} else {
+                        lblStatus.setText("Try again! " + (3 - count) + " / 3 attempt(s) left");
+                    }
+                    // Clear the password array for security reasons
+                    java.util.Arrays.fill(passwordChars, '0');
 				} catch (SQLException ex) {
 					ex.printStackTrace();
 				}
