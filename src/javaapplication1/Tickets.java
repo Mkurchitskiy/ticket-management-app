@@ -6,6 +6,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -117,6 +119,18 @@ public class Tickets extends JFrame implements ActionListener {
 		setVisible(true);
 	}
 
+	private LocalDate promptForDate(String message) {
+		while (true) {
+			String dateStr = JOptionPane.showInputDialog(null, message);
+			try {
+				return LocalDate.parse(dateStr);
+			} catch (DateTimeParseException e) {
+				JOptionPane.showMessageDialog(null, "Invalid date format or value. Please enter a valid date (YYYY-MM-DD).");
+			}
+		}
+	}
+
+
 	// Method to refresh the ticket view
     private void refreshTicketView() {
         try {
@@ -143,18 +157,22 @@ public class Tickets extends JFrame implements ActionListener {
 			// get ticket information
 			String ticketName = JOptionPane.showInputDialog(null, "Enter your name");
 			String ticketDesc = JOptionPane.showInputDialog(null, "Enter a ticket description");
+			
+			// Parse dates from string to LocalDate
+    		LocalDate startLocalDate = promptForDate("Enter start date (YYYY-MM-DD)");
+        	LocalDate endLocalDate = promptForDate("Enter end date (YYYY-MM-DD)");
+
 
 			// insert ticket information to database
-
-			int id = dao.insertRecords(ticketName, ticketDesc);
+			int id = dao.insertRecords(ticketName, ticketDesc, startLocalDate, endLocalDate);
 
 			// display results if successful or not to console / dialog box
 			if (id != 0) {
-				System.out.println("Ticket ID : " + id + " created successfully!!!");
-				JOptionPane.showMessageDialog(null, "Ticket id: " + id + " created");
+				JOptionPane.showMessageDialog(null, "Ticket ID : " + id + " created successfully!!!");
 				refreshTicketView(); // Refresh view to show new ticket
-			} else
-				System.out.println("Ticket cannot be created!!!");
+			} else {
+				JOptionPane.showMessageDialog(null, "Ticket cannot be created!!!");
+			}
 		}
 
 		else if (e.getSource() == mnuItemViewTicket) {
@@ -181,11 +199,18 @@ public class Tickets extends JFrame implements ActionListener {
 			String ticketIdString = JOptionPane.showInputDialog(null, "Enter the ID of the ticket to update:");
 			if (ticketIdString != null && !ticketIdString.isEmpty() ) {
 				int ticketId = Integer.parseInt(ticketIdString);
-				// Get the new descriptionate for the ticket
+
+				// Get the new description, start and end date for the ticket
 				String newDescription = JOptionPane.showInputDialog(null, "Enter the new description for the ticket: ");
+				String newStartDate = JOptionPane.showInputDialog(null, "Enter new start date (YYYY-MM-DD):");
+        		String newEndDate = JOptionPane.showInputDialog(null, "Enter new end date (YYYY-MM-DD):");
+
+				LocalDate newStartLocalDate = LocalDate.parse(newStartDate);
+       			LocalDate newEndLocalDate = LocalDate.parse(newEndDate);
+
 				if (newDescription != null && !newDescription.isEmpty()) {
 					// Call update method
-					int result = dao.updateRecords(ticketId, newDescription);
+					int result = dao.updateRecords(ticketId, newDescription, newStartLocalDate, newEndLocalDate);
 					if (result > 0) {
 						JOptionPane.showMessageDialog(null, "Tickets updated successfully!");
 						refreshTicketView(); // Refresh view to show new ticket

@@ -4,11 +4,13 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -40,15 +42,14 @@ public class Dao {
 
 	public void createTables() {
 		// variables for SQL Query table creations
-		final String createTicketsTable = "CREATE TABLE mkurc_tickets(ticket_id INT AUTO_INCREMENT PRIMARY KEY, ticket_issuer VARCHAR(30), ticket_description VARCHAR(200))";
-		final String createUsersTable = "CREATE TABLE mkurc_users(uid INT AUTO_INCREMENT PRIMARY KEY, uname VARCHAR(30), upass VARCHAR(30), admin int)";
+		final String createTicketsTable = "CREATE TABLE mkurc_tickets(ticket_id INT AUTO_INCREMENT PRIMARY KEY, ticket_issuer VARCHAR(30), ticket_description VARCHAR(200), start_date DATE, end_date DATE)";
+    	final String createUsersTable = "CREATE TABLE mkurc_users(uid INT AUTO_INCREMENT PRIMARY KEY, uname VARCHAR(30), upass VARCHAR(30), admin int)";
 
 		try {
-
+			
 			// execute queries to create tables
 
 			statement = getConnection().createStatement();
-
 			statement.executeUpdate(createTicketsTable);
 			statement.executeUpdate(createUsersTable);
 			System.out.println("Created tables in given database...");
@@ -110,27 +111,25 @@ public class Dao {
 		}
 	}
 
-	public int insertRecords(String ticketName, String ticketDesc) {
+	public int insertRecords(String ticketName, String ticketDesc, LocalDate startDate, LocalDate endDate) {
 		int id = 0;
-		try {
-			statement = getConnection().createStatement();
-			statement.executeUpdate("Insert into mkurc_tickets" + "(ticket_issuer, ticket_description) values(" + " '"
-					+ ticketName + "','" + ticketDesc + "')", Statement.RETURN_GENERATED_KEYS);
-
-			// retrieve ticket id number newly auto generated upon record insertion
-			ResultSet resultSet = null;
-			resultSet = statement.getGeneratedKeys();
-			if (resultSet.next()) {
-				// retrieve first field in table
-				id = resultSet.getInt(1);
+		String sql = "INSERT INTO mkurc_tickets (ticket_issuer, ticket_description, start_date, end_date) VALUES (?, ?, ?, ?)";
+		try (PreparedStatement ps = connect.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+			ps.setString(1, ticketName);
+			ps.setString(2, ticketDesc);
+			ps.setDate(3, Date.valueOf(startDate));
+			ps.setDate(4, Date.valueOf(endDate));
+			ps.executeUpdate();
+	
+			try (ResultSet resultSet = ps.getGeneratedKeys()) {
+				if (resultSet.next()) {
+					id = resultSet.getInt(1);
+				}
 			}
-
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.err.println("Error inserting records: " + e.getMessage());
 		}
 		return id;
-
 	}
 
 	public ResultSet readRecords(String username, boolean isAdmin) {
@@ -147,6 +146,9 @@ public class Dao {
 				ps.setString(1, username);
 			}
 			results = ps.executeQuery();
+			if(!results.isBeforeFirst()) {
+				System.out.println("No data fetched");
+			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -154,12 +156,14 @@ public class Dao {
 	}
 
 	// continue coding for updateRecords implementation
-	public int updateRecords(int ticketID, String ticketDescription) {
+	public int updateRecords(int ticketID, String ticketDesc, LocalDate startDate, LocalDate endDate) {
 		try {
-			String sql = "UPDATE mkurc_tickets SET ticket_description = ? WHERE ticket_id = ?;";
+			String sql = "UPDATE mkurc_tickets SET ticket_description = ?, start_date = ?, end_date = ? WHERE ticket_id = ?";
 			PreparedStatement ps = getConnection().prepareStatement(sql);
-			ps.setString(1, ticketDescription);
-			ps.setInt(2, ticketID);
+			ps.setString(1, ticketDesc);
+			ps.setDate(2, Date.valueOf(startDate));
+			ps.setDate(3, Date.valueOf(endDate));
+			ps.setInt(4, ticketID);
 			return ps.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
