@@ -117,6 +117,22 @@ public class Tickets extends JFrame implements ActionListener {
 		setVisible(true);
 	}
 
+	// Method to refresh the ticket view
+    private void refreshTicketView() {
+        try {
+            JTable jt = new JTable(ticketsJTable.buildTableModel(dao.readRecords(currentUser, chkIfAdmin)));
+            jt.setBounds(30, 40, 200, 400);
+            JScrollPane sp = new JScrollPane(jt);
+            getContentPane().removeAll(); // Remove all previous components
+            add(sp); // Add new JScrollPane with updated JTable
+            validate(); // Validate changes on the container
+            repaint(); // Repaint the container
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Failed to refresh tickets.");
+        }
+    }
+
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		// implement actions for sub menu items
@@ -136,6 +152,7 @@ public class Tickets extends JFrame implements ActionListener {
 			if (id != 0) {
 				System.out.println("Ticket ID : " + id + " created successfully!!!");
 				JOptionPane.showMessageDialog(null, "Ticket id: " + id + " created");
+				refreshTicketView(); // Refresh view to show new ticket
 			} else
 				System.out.println("Ticket cannot be created!!!");
 		}
@@ -171,6 +188,8 @@ public class Tickets extends JFrame implements ActionListener {
 					int result = dao.updateRecords(ticketId, newDescription);
 					if (result > 0) {
 						JOptionPane.showMessageDialog(null, "Tickets updated successfully!");
+						refreshTicketView(); // Refresh view to show new ticket
+
 					} else {
 						JOptionPane.showMessageDialog(null, "Failed to update tickets. Please try again.");
 					}
@@ -190,6 +209,7 @@ public class Tickets extends JFrame implements ActionListener {
 					int result = dao.deleteRecords(ticketId);
 					if (result > 0) {
 						JOptionPane.showMessageDialog(null, "Ticket deleted successfully!");
+						refreshTicketView(); // Refresh view to show new ticket
 					} else {
 						JOptionPane.showMessageDialog(null, "Failed to delete ticket. Please check the ticket ID.");
 					}
