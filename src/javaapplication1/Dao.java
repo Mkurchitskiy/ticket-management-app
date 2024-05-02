@@ -41,13 +41,12 @@ public class Dao {
 	// CRUD implementation
 
 	public void createTables() {
-
+		
 		// variables for SQL Query table creations
 		final String createTicketsTable = "CREATE TABLE mkurc_tickets(ticket_id INT AUTO_INCREMENT PRIMARY KEY, ticket_issuer VARCHAR(30), ticket_description VARCHAR(200), start_date DATE, end_date DATE)";
     	final String createUsersTable = "CREATE TABLE mkurc_users(uid INT AUTO_INCREMENT PRIMARY KEY, uname VARCHAR(30), upass VARCHAR(30), admin int)";
 
 		try {
-			
 			// execute queries to create tables
 
 			statement = getConnection().createStatement();
@@ -67,50 +66,60 @@ public class Dao {
 	}
 
 	public void addUsers() {
-		// add list of users from userlist.csv file to users table
-
-		// variables for SQL Query inserts
-		String sql;
-
-		Statement statement;
-		BufferedReader br;
-		List<List<String>> array = new ArrayList<>(); // list to hold (rows & cols)
-
-		// read data from file
-		try {
-			br = new BufferedReader(new FileReader(new File("./userlist.csv")));
-
+		// Read user data from the file
+		List<List<String>> users = new ArrayList<>();
+		try (BufferedReader br = new BufferedReader(new FileReader(new File("./userlist.csv")))) {
 			String line;
 			while ((line = br.readLine()) != null) {
-				array.add(Arrays.asList(line.split(",")));
+				users.add(Arrays.asList(line.split(",")));
 			}
 		} catch (Exception e) {
-			System.out.println("There was a problem loading the file");
+			System.out.println("There was a problem loading the file: " + e.getMessage());
+			return; // Exit if there's an error reading the file
 		}
 
-		try {
+		// Prepare SQL statements for checking, updating, and inserting
+		String queryCheck = "SELECT count(*) FROM mkurc_users WHERE uname = ?";
+		String updateSql = "UPDATE mkurc_users SET upass = ?, admin = ? WHERE uname = ?";
+		String insertSql = "INSERT INTO mkurc_users (uname, upass, admin) VALUES (?, ?, ?)";
 
-			// Setup the connection with the DB
+		try (Connection conn = getConnection();
+			PreparedStatement stmtCheck = conn.prepareStatement(queryCheck);
+			PreparedStatement stmtUpdate = conn.prepareStatement(updateSql);
+			PreparedStatement stmtInsert = conn.prepareStatement(insertSql)) {
 
-			statement = getConnection().createStatement();
+			for (List<String> user : users) {
+				String uname = user.get(0);
+				String upass = user.get(1);
+				int admin = Integer.parseInt(user.get(2));
 
-			// create loop to grab each array index containing a list of values
-			// and PASS (insert) that data into your User table
-			for (List<String> rowData : array) {
+				// Check if user exists
+				stmtCheck.setString(1, uname);
+				ResultSet rs = stmtCheck.executeQuery();
+				rs.next();
+				int count = rs.getInt(1);
 
-				sql = "insert into mkurc_users(uname,upass,admin) " + "values('" + rowData.get(0) + "'," + " '"
-						+ rowData.get(1) + "','" + rowData.get(2) + "');";
-				statement.executeUpdate(sql);
+				if (count > 0) {
+					// User exists, update
+					stmtUpdate.setString(1, upass);
+					stmtUpdate.setInt(2, admin);
+					stmtUpdate.setString(3, uname);
+					stmtUpdate.executeUpdate();
+				} else {
+					// User does not exist, insert
+					stmtInsert.setString(1, uname);
+					stmtInsert.setString(2, upass);
+					stmtInsert.setInt(3, admin);
+					stmtInsert.executeUpdate();
+				}
 			}
-			System.out.println("Inserts completed in the given database...");
-
-			// close statement object
-			statement.close();
-
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
+			System.out.println("User updates and inserts completed in the given database.");
+		} catch (SQLException e) {
+			System.out.println("SQL Error during user update/insert: " + e.getMessage());
+			e.printStackTrace();
 		}
 	}
+
 
 	public int insertRecords(String ticketName, String ticketDesc, LocalDate startDate, LocalDate endDate) {
 		int id = 0;
@@ -141,16 +150,22 @@ public class Dao {
 				query = "SELECT * FROM mkurc_tickets";
 			} else {
 				query = "SELECT * FROM mkurc_tickets WHERE ticket_issuer = ?";
+				System.out.println("Querying tickets for user: " + username);
 			}
 			PreparedStatement ps = connect.prepareStatement(query);
 			if (!isAdmin) {
 				ps.setString(1, username);
+				System.out.println("Prepared statement: " + ps);
 			}
 			results = ps.executeQuery();
 			if(!results.isBeforeFirst()) {
 				System.out.println("No data fetched");
+				System.out.println("No data fetched for user: " + username);
+			} else {
+				System.out.println("Data fetched for user: " + username);
 			}
 		} catch (SQLException e) {
+			System.out.println("Error fetching tickets: " + e.getMessage());
 			e.printStackTrace();
 		}
 		return results;
@@ -183,5 +198,22 @@ public class Dao {
 			e.printStackTrace();
 			return 0;
 		}
+	}
+
+	public int closeRecords(int ticketID) {
+		int result = 0;
+		String sql = "UPDATE mkurc_tickets SET is_closed = TRUE WHERE ticketID = ?";
+		try (PreparedStatement ps = getConnection().prepareStatement(sql)){
+			result = ps.executeUpdate();
+			if (result > 0) {
+				System.out.println("Ticker " + ticketID + "has been closed successfully.");
+			} else {
+				System.out.println("Failed to close the ticket. No ticker found with ID: " + ticketID);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return 0;
+		}
+		return result;
 	}
 }

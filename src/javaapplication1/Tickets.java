@@ -36,6 +36,7 @@ public class Tickets extends JFrame implements ActionListener {
 	JMenuItem mnuItemDelete;
 	JMenuItem mnuItemOpenTicket;
 	JMenuItem mnuItemViewTicket;
+	JMenuItem mnuItemCloseTicket;
 
 	public Tickets(Boolean isAdmin, String username) {
 		chkIfAdmin = isAdmin;
@@ -76,6 +77,8 @@ public class Tickets extends JFrame implements ActionListener {
 		mnuTickets.add(mnuItemViewTicket);
 
 		// initialize any more desired sub menu items below
+		mnuItemCloseTicket = new JMenuItem("Close Ticket");
+		mnuAdmin.add(mnuItemCloseTicket);
 
 		/* Add action listeners for each desired menu item *************/
 		mnuItemExit.addActionListener(this);
@@ -83,6 +86,7 @@ public class Tickets extends JFrame implements ActionListener {
 		mnuItemDelete.addActionListener(this);
 		mnuItemOpenTicket.addActionListener(this);
 		mnuItemViewTicket.addActionListener(this);
+		mnuItemCloseTicket.addActionListener(this);
 
 		 /*
 		  * continue implementing any other desired sub menu items (like 
@@ -238,6 +242,20 @@ public class Tickets extends JFrame implements ActionListener {
 					} else {
 						JOptionPane.showMessageDialog(null, "Failed to delete ticket. Please check the ticket ID.");
 					}
+				}
+			}
+		}
+
+		else if (e.getSource() == mnuItemCloseTicket) {
+			String ticketIdString = JOptionPane.showInputDialog(null, "Enter the ID of the ticket to close:");
+			if (ticketIdString != null && !ticketIdString.isEmpty()) {
+				int ticketId = Integer.parseInt(ticketIdString);
+				int result = dao.closeRecords(ticketId);
+				if (result > 0) {
+					JOptionPane.showMessageDialog(null, "Ticket closed successfully!");
+					refreshTicketView();  // Refresh the ticket view to reflect the change
+				} else {
+					JOptionPane.showMessageDialog(null, "Failed to close the ticket. Please check the ticket ID.");
 				}
 			}
 		}
