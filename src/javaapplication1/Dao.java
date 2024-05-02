@@ -41,6 +41,7 @@ public class Dao {
 	// CRUD implementation
 
 	public void createTables() {
+
 		// variables for SQL Query table creations
 		final String createTicketsTable = "CREATE TABLE mkurc_tickets(ticket_id INT AUTO_INCREMENT PRIMARY KEY, ticket_issuer VARCHAR(30), ticket_description VARCHAR(200), start_date DATE, end_date DATE)";
     	final String createUsersTable = "CREATE TABLE mkurc_users(uid INT AUTO_INCREMENT PRIMARY KEY, uname VARCHAR(30), upass VARCHAR(30), admin int)";
