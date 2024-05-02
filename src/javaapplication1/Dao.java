@@ -202,18 +202,20 @@ public class Dao {
 
 	public int closeRecords(int ticketID) {
 		int result = 0;
-		String sql = "UPDATE mkurc_tickets SET is_closed = TRUE WHERE ticketID = ?";
-		try (PreparedStatement ps = getConnection().prepareStatement(sql)){
+		String sql = "UPDATE mkurc_tickets SET is_closed = TRUE WHERE ticket_id = ?";
+		try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
+			ps.setInt(1, ticketID);  // Set the ticketID in the prepared statement
 			result = ps.executeUpdate();
 			if (result > 0) {
-				System.out.println("Ticker " + ticketID + "has been closed successfully.");
+				System.out.println("Ticket " + ticketID + " has been closed successfully.");
 			} else {
-				System.out.println("Failed to close the ticket. No ticker found with ID: " + ticketID);
+				System.out.println("Failed to close the ticket. No ticket found with ID: " + ticketID);
 			}
 		} catch (SQLException e) {
+			System.err.println("Error closing ticket: " + e.getMessage());
 			e.printStackTrace();
-			return 0;
 		}
 		return result;
 	}
+	
 }
